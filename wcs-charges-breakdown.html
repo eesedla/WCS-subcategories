@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WCS Charges Breakdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: transparent;
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 16px;
+}
+
+.viz-container {
+  width: 100%;
+  max-width: 900px;
+  background: transparent;
+  overflow: hidden;
+}
+
+.viz-container::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: #F4C913;
+  width: 100%;
+}
+
+.viz-header { padding: 20px 20px 16px; }
+
+.viz-kicker {
+  font-family: 'Gotham', 'Inter', 'Arial Narrow', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  color: #404F54;
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.viz-heading {
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #404F54;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.viz-subheading {
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #404F54;
+  opacity: 0.72;
+  line-height: 1.5;
+}
+
+
+.chart-area {
+  padding: 20px 20px 12px;
+  position: relative;
+}
+
+.bar-row { margin-bottom: 10px; }
+
+.bar-row-label {
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #404F54;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.bar-row-label .count-label {
+  font-family: 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: #404F54;
+  opacity: 0.55;
+}
+
+.bar-track {
+  position: relative;
+  height: 28px;
+  background: rgba(64,79,84,0.07);
+  border-radius: 2px;
+  overflow: visible;
+}
+
+.bar-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.bar-pct {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.bar-pct.outside {
+  color: #404F54;
+  text-shadow: none;
+  right: auto;
+  left: calc(var(--bar-width) + 8px);
+}
+
+.bar-tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: #404F54;
+  color: #fff;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  padding: 12px 16px;
+  border-radius: 2px;
+  max-width: 280px;
+  min-width: 180px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+.bar-tooltip.visible { opacity: 1; }
+
+.bar-tooltip .tt-title {
+  font-weight: 700;
+  font-size: 13px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.bar-tooltip .tt-total {
+  font-size: 0.68rem;
+  opacity: 0.55;
+  display: block;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.bar-tooltip .tt-desc {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  opacity: 0.85;
+  max-width: 220px;
+  white-space: normal;
+}
+
+.bar-tooltip .tt-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.bar-tooltip .tt-swatch {
+  width: 8px; height: 8px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.bar-tooltip .tt-label { flex: 1; font-size: 0.72rem; }
+.bar-tooltip .tt-count { font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(64,79,84,0.15);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #404F54;
+}
+
+.legend-swatch {
+  width: 11px; height: 11px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.source-note {
+  padding: 8px 20px 24px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 0.64rem;
+  color: #404F54;
+  opacity: 0.42;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="viz-container">
+  <div class="viz-header">
+    <div class="viz-kicker">Cleveland Police Department · Body Camera Violations</div>
+    <div class="viz-heading">How Officers Violated Body Camera Policy</div>
+    <div class="viz-subheading">395 WCS charges across 379 disciplinary cases, 2016–2026. Some cases involved multiple violations and are counted in each applicable category.</div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <div class="chart-area" id="chart-area"></div>
+
+
+</div>
+
+<div class="bar-tooltip" id="tooltip"></div>
+
+<script>
+const TOTAL = 379;
+
+const categories = [
+  {
+    id: 'failed_activate',
+    label: 'Failed to Activate',
+    short: 'Failed to Activate',
+    count: 194,
+    color: '#d0d64c',
+    desc: 'Officer failed to activate the WCS or place it in event mode before or during a qualifying incident requiring recording.'
+  },
+  {
+    id: 'unspecified',
+    label: 'Unspecified',
+    short: 'Unspecified',
+    count: 125,
+    color: '#a9d2cf',
+    desc: 'Disciplinary record listed a generic “WCS violation” without describing the specific nature of the offense.'
+  },
+  {
+    id: 'ending_recording',
+    label: 'Ended recording early',
+    short: 'Ended Recording Early',
+    count: 48,
+    color: '#23685b',
+    desc: 'Officer turned off the WCS or allowed it to return to buffering mode before an incident concluded, cutting off the recording.'
+  },
+  {
+    id: 'upload_tag',
+    label: 'Failed to Upload or Tag',
+    short: 'Failed to Upload / Tag',
+    count: 16,
+    color: '#d64d4d',
+    desc: 'Officer failed to upload, categorize, or tag captured WCS media at the end of a tour or within required timeframes.'
+  },
+  {
+    id: 'unsecured',
+    label: 'Damaged or lost camera',
+    short: 'Unsecured / Lost',
+    count: 12,
+    color: '#f4c913',
+    desc: 'Officer failed to safeguard assigned WCS equipment — including losing, allowing damage to, or failing to secure the device.'
+  }
+];
+
+const catMap = Object.fromEntries(categories.map(c => [c.id, c]));
+
+// --- Tooltip ---
+const tooltipEl = document.getElementById('tooltip');
+
+function showTooltip(html, x, y) {
+  tooltipEl.innerHTML = html;
+  tooltipEl.classList.add('visible');
+  moveTooltip(x, y);
+}
+
+function moveTooltip(x, y) {
+  const pad = 16;
+  tooltipEl.style.left = '0px';
+  tooltipEl.style.top = '0px';
+  const r = tooltipEl.getBoundingClientRect();
+  let tx = x + pad;
+  let ty = y - 12;
+  if (tx + r.width > window.innerWidth - 8) tx = x - r.width - pad;
+  if (ty + r.height > window.innerHeight - 8) ty = y - r.height - 12;
+  tooltipEl.style.left = tx + 'px';
+  tooltipEl.style.top = ty + 'px';
+}
+
+function hideTooltip() {
+  tooltipEl.classList.remove('visible');
+}
+
+// --- Legend ---
+function renderLegend() {
+  document.getElementById('legend').innerHTML = categories.map(c =>
+    `<div class="legend-item">
+      <span class="legend-swatch" style="background:${c.color}"></span>
+      ${c.label}
+    </div>`
+  ).join('');
+}
+
+// --- Category view ---
+function renderCategoryView() {
+  const area = document.getElementById('chart-area');
+
+  area.innerHTML = categories.map(cat => {
+    const pct = cat.count / TOTAL * 100;
+    const pctStr = pct.toFixed(1) + '%';
+    // All labels go "outside" (right of fill) — consistent, readable regardless of bar width
+    return `
+    <div class="bar-row" data-cat="${cat.id}"
+      onmousemove="catHover(event,'${cat.id}')"
+      onmouseleave="hideTooltip()">
+      <div class="bar-row-label">
+        ${cat.label}
+        <span class="count-label">${cat.count.toLocaleString()} cases</span>
+      </div>
+      <div class="bar-track" style="--bar-width:${pctStr}">
+        <div class="bar-fill" style="width:0%;background:${cat.color}" data-w="${pctStr}"></div>
+        <span class="bar-pct outside">${pctStr}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Animate bars on next frame
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    area.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.w;
+    });
+  }));
+}
+
+function catHover(e, id) {
+  const cat = catMap[id];
+  const pct = (cat.count / TOTAL * 100).toFixed(1);
+  showTooltip(
+    `<span class=”tt-title”>${cat.label}</span>
+     <span class=”tt-total”>${cat.count.toLocaleString()} of ${TOTAL} cases &nbsp;&middot;&nbsp; ${pct}%</span>
+     <span class=”tt-desc”>${cat.desc}</span>`,
+    e.clientX, e.clientY
+  );
+}
+
+// Init
+renderLegend();
+renderCategoryView();
+</script>
+</body>
+</html>
