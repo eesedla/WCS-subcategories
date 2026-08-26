@@ -37,7 +37,7 @@ body {
 .viz-header { padding: 20px 20px 16px; }
 
 .viz-kicker {
-  font-family: 'Gotham', 'Inter', 'Arial Narrow', sans-serif;
+  font-family: 'Gotham', 'Gotham Medium', sans-serif;
   font-weight: 500;
   font-size: 12px;
   color: #404F54;
@@ -95,9 +95,9 @@ body {
 .bar-track {
   position: relative;
   height: 28px;
-  background: rgba(64,79,84,0.07);
+  background: rgba(64,79,84,0.06);
   border-radius: 2px;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .bar-fill {
@@ -105,8 +105,10 @@ body {
   top: 0; left: 0;
   height: 100%;
   border-radius: 2px;
-  transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: width 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease;
 }
+
+.bar-row:hover .bar-fill { opacity: 0.95; }
 
 .bar-pct {
   position: absolute;
@@ -188,28 +190,40 @@ body {
 .bar-tooltip .tt-count { font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
 
 .legend {
+  padding: 4px 20px 16px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 18px;
-  padding: 12px 20px;
-  border-bottom: 1px solid rgba(64,79,84,0.15);
+  gap: 5px 6px;
 }
 
-.legend-item {
-  display: flex;
+.legend-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: 'Inter', Arial, sans-serif;
-  font-size: 12px;
+  gap: 5px;
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-size: 0.85rem;
   font-weight: 500;
   color: #404F54;
+  padding: 6px 14px;
+  border: 1px solid #ccd8db;
+  border-radius: 2px;
+  background: #fff;
+  line-height: 1;
 }
 
-.legend-swatch {
-  width: 11px; height: 11px;
-  border-radius: 2px;
+.legend-chip .lg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.legend-chip .lg-count {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  opacity: 0.55;
+  font-weight: 500;
 }
 
 .source-note {
@@ -228,7 +242,7 @@ body {
   <div class="viz-header">
     <div class="viz-kicker">Signal Cleveland</div>
     <div class="viz-heading">How Officers Violated Body Camera Policy</div>
-    <div class="viz-subheading">395 WCS charges across 379 disciplinary cases from late 2016 to early 2026. Some cases involved multiple violations and are counted in each applicable category.</div>
+    <div class="viz-subheading">399 WCS charges across 372 disciplinary cases from 2017 to 2025. Some cases involved multiple violations and are counted in each applicable category.</div>
   </div>
 
   <div class="legend" id="legend"></div>
@@ -240,48 +254,48 @@ body {
 <div class="bar-tooltip" id="tooltip"></div>
 
 <script>
-const TOTAL = 379;
+const TOTAL = 372;
 
 const categories = [
   {
-    id: 'failed_activate',
-    label: 'Failed to Activate',
+    id: 'activate',
+    label: 'Failed to activate',
     short: 'Failed to Activate',
-    count: 194,
-    color: '#d0d64c',
-    desc: 'Officer failed to activate the WCS or place it in event mode before or during a qualifying incident requiring recording.'
+    count: 228,
+    color: '#23685b',
+    desc: 'Officer failed to activate the WCS or place it in event mode before or during a qualifying incident, deactivated it improperly, or did not carry it as required.'
   },
   {
-    id: 'unspecified',
+    id: 'generic',
     label: 'Unspecified',
     short: 'Unspecified',
-    count: 125,
-    color: '#a9d2cf',
-    desc: 'Disciplinary record listed a generic “WCS violation” without describing the specific nature of the offense.'
+    count: 93,
+    color: '#d0d64c',
+    desc: 'Disciplinary record cited a generic “WCS violation” without describing the specific nature of the offense in the narrative.'
   },
   {
-    id: 'ending_recording',
+    id: 'maintain',
     label: 'Ended recording early',
     short: 'Ended Recording Early',
-    count: 48,
-    color: '#23685b',
-    desc: 'Officer turned off the WCS or allowed it to return to buffering mode before an incident concluded, cutting off the recording.'
+    count: 37,
+    color: '#5fa896',
+    desc: 'Officer allowed the WCS to return to buffering mode, or failed to keep it in event mode, cutting a recording short.'
   },
   {
-    id: 'upload_tag',
-    label: 'Failed to Upload or Tag',
+    id: 'upload',
+    label: 'Failed to upload / tag',
     short: 'Failed to Upload / Tag',
-    count: 16,
-    color: '#d64d4d',
-    desc: 'Officer failed to upload, categorize, or tag captured WCS media at the end of a tour or within required timeframes.'
+    count: 21,
+    color: '#a9d2cf',
+    desc: 'Officer failed to upload, tag, or categorize captured WCS video — including footage sitting in the Evidence Transfer Manager (ETM) queue or from a dash camera.'
   },
   {
-    id: 'unsecured',
-    label: 'Damaged or lost camera',
+    id: 'safeguard',
+    label: 'Lost or damaged equipment',
     short: 'Unsecured / Lost',
-    count: 12,
-    color: '#f4c913',
-    desc: 'Officer failed to safeguard assigned WCS equipment — including losing, allowing damage to, or failing to secure the device.'
+    count: 20,
+    color: '#dbe7e3',
+    desc: 'Officer failed to safeguard assigned WCS equipment — including losing it, allowing it to be damaged, or leaving it unsecured.'
   }
 ];
 
@@ -316,9 +330,10 @@ function hideTooltip() {
 // --- Legend ---
 function renderLegend() {
   document.getElementById('legend').innerHTML = categories.map(c =>
-    `<div class="legend-item">
-      <span class="legend-swatch" style="background:${c.color}"></span>
+    `<div class="legend-chip">
+      <span class="lg-dot" style="background:${c.color}"></span>
       ${c.label}
+      <span class="lg-count">${c.count.toLocaleString()}</span>
     </div>`
   ).join('');
 }
@@ -358,9 +373,9 @@ function catHover(e, id) {
   const cat = catMap[id];
   const pct = (cat.count / TOTAL * 100).toFixed(1);
   showTooltip(
-    `<span class=”tt-title”>${cat.label}</span>
-     <span class=”tt-total”>${cat.count.toLocaleString()} of ${TOTAL} cases &nbsp;&middot;&nbsp; ${pct}%</span>
-     <span class=”tt-desc”>${cat.desc}</span>`,
+    `<span class="tt-title">${cat.label}</span>
+     <span class="tt-total">${cat.count.toLocaleString()} of ${TOTAL} cases &nbsp;&middot;&nbsp; ${pct}%</span>
+     <span class="tt-desc">${cat.desc}</span>`,
     e.clientX, e.clientY
   );
 }
