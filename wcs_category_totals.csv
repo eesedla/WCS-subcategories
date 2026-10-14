@@ -1,8 +1,8 @@
 category,label,count,pct_of_cases
-activate,Failed to activate,234,61.7%
-maintain,Ended recording early,48,12.7%
-upload,Failed to upload / tag,20,5.3%
-safeguard,Lost or damaged equipment,13,3.4%
-generic,Unspecified,86,22.7%
-TOTAL_CASES,Total disciplinary cases,379,100.0%
-TOTAL_CHARGES,Sum of category counts,401,105.8%
+activate,Failed to activate,242,61.9%
+maintain,Ended recording early,50,12.8%
+upload,Failed to upload / tag,22,5.6%
+safeguard,Lost or damaged equipment,14,3.6%
+generic,Unspecified,87,22.3%
+TOTAL_CASES,Total disciplinary cases,391,100.0%
+TOTAL_CHARGES,Sum of category counts,415,106.1%

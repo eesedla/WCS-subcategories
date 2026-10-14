@@ -242,11 +242,13 @@ body {
   <div class="viz-header">
     <div class="viz-kicker">Signal Cleveland</div>
     <div class="viz-heading">How Officers Violated Body Camera Policy</div>
-    <div class="viz-subheading">401 WCS charges across 379 disciplinary cases from late 2016 to early 2026. Some cases involved multiple violations and are counted in each applicable category.</div>
+    <div class="viz-subheading">415 WCS charges across 391 disciplinary cases from December 2016 through May 2026. Some cases involved multiple violations and are counted in each applicable category.</div>
   </div>
 
   <div class="legend" id="legend"></div>
   <div class="chart-area" id="chart-area"></div>
+
+
 
 
 </div>
@@ -254,14 +256,14 @@ body {
 <div class="bar-tooltip" id="tooltip"></div>
 
 <script>
-const TOTAL = 379;
+const TOTAL = 391;
 
 const categories = [
   {
     id: 'activate',
     label: 'Failed to activate',
     short: 'Failed to Activate',
-    count: 234,
+    count: 242,
     color: '#23685b',
     desc: 'Officer failed to activate the WCS or place it in event mode before or during a qualifying incident, deactivated it improperly, or did not carry it as required.'
   },
@@ -269,7 +271,7 @@ const categories = [
     id: 'generic',
     label: 'Unspecified',
     short: 'Unspecified',
-    count: 86,
+    count: 87,
     color: '#d0d64c',
     desc: 'Disciplinary record cited a generic “WCS violation” without describing the specific nature of the offense in the narrative.'
   },
@@ -277,7 +279,7 @@ const categories = [
     id: 'maintain',
     label: 'Ended recording early',
     short: 'Ended Recording Early',
-    count: 48,
+    count: 50,
     color: '#5fa896',
     desc: 'Officer deactivated the WCS or returned it to buffering mode before an incident concluded, cutting a recording short.'
   },
@@ -285,7 +287,7 @@ const categories = [
     id: 'upload',
     label: 'Failed to upload / tag',
     short: 'Failed to Upload / Tag',
-    count: 20,
+    count: 22,
     color: '#a9d2cf',
     desc: 'Officer failed to upload, tag, or categorize captured WCS video — including footage sitting in the Evidence Transfer Manager (ETM) queue or from a dash camera.'
   },
@@ -293,7 +295,7 @@ const categories = [
     id: 'safeguard',
     label: 'Lost or damaged equipment',
     short: 'Unsecured / Lost',
-    count: 13,
+    count: 14,
     color: '#dbe7e3',
     desc: 'Officer failed to safeguard the assigned WCS itself — including losing it, allowing it to be damaged, or leaving it unsecured.'
   }
